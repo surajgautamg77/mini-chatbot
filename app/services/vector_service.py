@@ -17,11 +17,7 @@ class VectorService:
         if not text.strip():
             return []
             
-        # Split text into chunks
         chunks = self.text_splitter.split_text(text)
-        
-        # Generate embeddings for all chunks at once
-        # BGE models work best with this prefix for symmetric retrieval
         embeddings = self.model.encode(chunks, normalize_embeddings=True)
         
         chunk_data = []
@@ -30,7 +26,7 @@ class VectorService:
                 "document_id": doc_id,
                 "chunk_index": i,
                 "content": chunk_text,
-                "embedding": embedding.tolist(),  # Store as list for MongoDB
+                "embedding": embedding.tolist(),
                 "metadata": {
                     "source_doc_id": doc_id,
                     "chunk_count": len(chunks)
@@ -38,5 +34,11 @@ class VectorService:
             })
             
         return chunk_data
+
+    async def get_query_embedding(self, query: str) -> List[float]:
+        # BGE models work best with specific instruction for asymmetric retrieval
+        instruction = "Represent this sentence for searching relevant passages: "
+        embedding = self.model.encode(instruction + query, normalize_embeddings=True)
+        return embedding.tolist()
 
 vector_service = VectorService()

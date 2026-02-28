@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1.endpoints import documents
+from app.api.v1.endpoints import documents, chat
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.core.config import settings
 
@@ -16,6 +16,7 @@ async def shutdown_db_client():
 
 # Include Routers
 app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 
 @app.get("/")
 async def root():
