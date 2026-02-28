@@ -1,9 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import documents, chat
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.core.config import settings
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, adjust as needed for security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Event Handlers
 @app.on_event("startup")
