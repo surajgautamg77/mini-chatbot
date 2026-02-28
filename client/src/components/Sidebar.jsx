@@ -1,19 +1,19 @@
-import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  FileText, 
-  Settings, 
+import { NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  FileText,
+  Settings,
   Code,
-  Bot
-} from 'lucide-react';
+  Bot,
+} from "lucide-react";
 
 function Sidebar() {
   const navItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/chatbot', icon: MessageSquare, label: 'Chatbot' },
-    { to: '/documents', icon: FileText, label: 'Knowledge Base' },
-    { to: '/installation', icon: Code, label: 'Installation' },
+    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/chatbot", icon: MessageSquare, label: "Chatbot" },
+    { to: "/documents", icon: FileText, label: "Knowledge Base" },
+    { to: "/installation", icon: Code, label: "Installation" },
   ];
 
   return (
@@ -22,7 +22,9 @@ function Sidebar() {
         <div className="bg-primary-600 p-2 rounded-xl">
           <Bot className="w-6 h-6 text-white" />
         </div>
-        <span className="text-xl font-bold text-gray-900 tracking-tight">Gemini RAG</span>
+        <span className="text-xl font-bold text-gray-900 tracking-tight">
+          AI assistant
+        </span>
       </div>
 
       <nav className="flex-1 p-4 space-y-1 mt-4">
@@ -33,8 +35,8 @@ function Sidebar() {
             className={({ isActive }) =>
               `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                 isActive
-                  ? 'bg-primary-50 text-primary-700 shadow-sm'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  ? "bg-primary-50 text-primary-700 shadow-sm"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
               }`
             }
           >
