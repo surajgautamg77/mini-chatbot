@@ -7,9 +7,15 @@ export const useChat = (initialSessionId = null) => {
   const [sessionId, setSessionId] = useState(initialSessionId);
 
   const fetchHistory = useCallback(async (sid) => {
-    if (!sid) return;
+    if (!sid) {
+      setMessages([]);
+      return;
+    }
+    
+    setLoading(true);
     try {
       const response = await chatAPI.getHistory(sid);
+      // History is returned from newest to oldest; we reverse to show chronologically
       const history = (response || []).reverse().map((chat) => [
         {
           id: chat.id + '-q',
@@ -26,18 +32,33 @@ export const useChat = (initialSessionId = null) => {
       ]).flat();
       setMessages(history);
     } catch (error) {
-      console.error('Error fetching chat history:', error);
+      // 404 means a new session with no history yet
+      setMessages([]);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
+  // Sync Session ID from URL or Storage
   useEffect(() => {
-    let sid = sessionId || localStorage.getItem('chat_session_id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSid = urlParams.get('sessionId');
+    
+    let sid = urlSid || initialSessionId || localStorage.getItem('chat_session_id');
+    
     if (!sid) {
       sid = crypto.randomUUID();
       localStorage.setItem('chat_session_id', sid);
     }
+    
     setSessionId(sid);
-    fetchHistory(sid);
+  }, [initialSessionId]);
+
+  // REFRESH history whenever sessionId changes
+  useEffect(() => {
+    if (sessionId) {
+      fetchHistory(sessionId);
+    }
   }, [sessionId, fetchHistory]);
 
   const sendMessage = async (content) => {
@@ -81,8 +102,7 @@ export const useChat = (initialSessionId = null) => {
   const clearHistory = () => {
     const newSid = crypto.randomUUID();
     localStorage.setItem('chat_session_id', newSid);
-    setSessionId(newSid);
-    setMessages([]);
+    setSessionId(newSid); // This will trigger the useEffect to refresh/clear messages
     return newSid;
   };
 
