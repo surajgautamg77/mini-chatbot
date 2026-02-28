@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Code, ExternalLink } from 'lucide-react';
+import { Copy, Check, Code, ExternalLink, ListOrdered, FileText, ClipboardCopy, Layout } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function Installation() {
@@ -56,21 +56,19 @@ function Installation() {
     container.appendChild(iframe);
     document.body.appendChild(btn);
     document.body.appendChild(container);
-// Toggle function
-function toggleChat() {
-  if (container.style.display === "none") {
-    // Generate a new session ID every time it opens
-    var newSessionId = generateUUID();
-    iframe.src = "${siteUrl}/embed/chat?sessionId=" + newSessionId;
-    container.style.display = "block";
-    btn.style.display = "none"; // Hide button when open
-  } else {
-    container.style.display = "none";
-    btn.style.display = "flex"; // Show button when closed
-    iframe.src = "about:blank";
-  }
-}
 
+    function toggleChat() {
+      if (container.style.display === "none") {
+        var newSessionId = generateUUID();
+        iframe.src = "${siteUrl}/embed/chat?sessionId=" + newSessionId;
+        container.style.display = "block";
+        btn.style.display = "none";
+      } else {
+        container.style.display = "none";
+        btn.style.display = "flex";
+        iframe.src = "about:blank";
+      }
+    }
 
     btn.onclick = toggleChat;
 
@@ -89,44 +87,90 @@ function toggleChat() {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Installation</h1>
-        <p className="text-gray-600">Ensure a fresh experience for your users every time they open the chat.</p>
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Installation Guide</h1>
+        <p className="text-gray-600 text-lg">Follow these simple steps to integrate the chatbot into your website.</p>
       </div>
 
+      {/* Steps Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+          <div className="text-primary-100 absolute -top-2 -right-2 transform rotate-12">
+            <FileText size={80} />
+          </div>
+          <div className="flex items-center space-x-3 mb-4">
+            <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm">1</span>
+            <h3 className="font-bold text-gray-900">Prepare Data</h3>
+          </div>
+          <p className="text-sm text-gray-500 relative z-10">
+            Go to the <b>Knowledge Base</b> and upload the documents you want the AI to learn from.
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+          <div className="text-primary-100 absolute -top-2 -right-2 transform rotate-12">
+            <ClipboardCopy size={80} />
+          </div>
+          <div className="flex items-center space-x-3 mb-4">
+            <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm">2</span>
+            <h3 className="font-bold text-gray-900">Copy Script</h3>
+          </div>
+          <p className="text-sm text-gray-500 relative z-10">
+            Copy the auto-generated code snippet provided in the section below.
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+          <div className="text-primary-100 absolute -top-2 -right-2 transform rotate-12">
+            <Layout size={80} />
+          </div>
+          <div className="flex items-center space-x-3 mb-4">
+            <span className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm">3</span>
+            <h3 className="font-bold text-gray-900">Go Live</h3>
+          </div>
+          <p className="text-sm text-gray-500 relative z-10">
+            Paste the script into your website HTML before the <code>&lt;/body&gt;</code> tag.
+          </p>
+        </div>
+      </div>
+
+      {/* Code Section */}
       <div className="card p-8 bg-white border border-gray-100 shadow-sm">
         <div className="flex items-center space-x-3 mb-6">
           <div className="bg-primary-100 p-2 rounded-lg text-primary-600">
             <Code className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold">Smart Widget Script</h2>
+          <h2 className="text-xl font-bold text-gray-900">Step 2: Copy the Script</h2>
         </div>
 
-        <p className="text-sm text-gray-500 mb-4">
-          This script automatically creates a <b>new chat session</b> every time the bubble is clicked.
-        </p>
-
-        <div className="relative">
-          <pre className="bg-gray-900 text-gray-300 p-6 rounded-2xl overflow-x-auto text-xs font-mono leading-relaxed max-h-[400px]">
+        <div className="relative group">
+          <pre className="bg-gray-900 text-gray-300 p-6 rounded-2xl overflow-x-auto text-xs font-mono leading-relaxed max-h-[400px] border-4 border-gray-800 shadow-inner">
             {scriptCode}
           </pre>
           <button 
             onClick={handleCopy}
-            className="absolute top-4 right-4 p-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl transition-all shadow-lg"
+            className="absolute top-4 right-4 p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-lg flex items-center space-x-2"
           >
-            {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+            {copied ? (
+              <><Check className="w-4 h-4" /> <span>Copied!</span></>
+            ) : (
+              <><Copy className="w-4 h-4" /> <span>Copy Code</span></>
+            )}
           </button>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <p className="text-xs text-blue-700 font-medium italic">
+            Note: This script will automatically create a fresh session for every user click.
+          </p>
           <a 
             href="/embed/chat" 
             target="_blank" 
             className="flex items-center space-x-2 text-primary-600 hover:underline font-bold text-sm"
           >
             <ExternalLink className="w-4 h-4" />
-            <span>Standalone Widget Preview</span>
+            <span>Preview Widget</span>
           </a>
         </div>
       </div>
