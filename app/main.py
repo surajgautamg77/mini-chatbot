@@ -1,0 +1,22 @@
+from fastapi import FastAPI
+from app.api.v1.endpoints import documents
+from app.db.mongodb import connect_to_mongo, close_mongo_connection
+from app.core.config import settings
+
+app = FastAPI(title=settings.PROJECT_NAME)
+
+# Event Handlers
+@app.on_event("startup")
+async def startup_db_client():
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    await close_mongo_connection()
+
+# Include Routers
+app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
+
+@app.get("/")
+async def root():
+    return {"message": f"Welcome to {settings.PROJECT_NAME}"}
