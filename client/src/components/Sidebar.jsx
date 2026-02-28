@@ -1,88 +1,61 @@
-import { NavLink } from "react-router-dom";
-import {
-  FileText,
-  MessageSquare,
-  GitBranch,
-  RotateCcw,
-  Bot,
-  BarChart3,
-} from "lucide-react";
-
-const navItems = [
-  {
-    path: "/dashboard",
-    icon: BarChart3,
-    label: "Dashboard",
-  },
-  {
-    path: "/documents",
-    icon: FileText,
-    label: "Documents",
-  },
-  {
-    path: "/chatbot",
-    icon: MessageSquare,
-    label: "Chatbot",
-  },
-  {
-    path: "/flowbuilder",
-    icon: GitBranch,
-    label: "Flow Builder",
-  },
-
-  {
-    path: "/resetbot",
-    icon: RotateCcw,
-    label: "Reset Bot",
-  },
-];
+import { NavLink } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  MessageSquare, 
+  FileText, 
+  Settings, 
+  Code,
+  Bot
+} from 'lucide-react';
 
 function Sidebar() {
+  const navItems = [
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/chatbot', icon: MessageSquare, label: 'Chatbot' },
+    { to: '/documents', icon: FileText, label: 'Knowledge Base' },
+    { to: '/installation', icon: Code, label: 'Installation' },
+  ];
+
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">RAG Chatbot</h1>
-            <p className="text-sm text-gray-500">AI Assistant</p>
-          </div>
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-full shadow-sm z-20">
+      <div className="p-6 flex items-center space-x-3 border-b border-gray-100">
+        <div className="bg-primary-600 p-2 rounded-xl">
+          <Bot className="w-6 h-6 text-white" />
         </div>
+        <span className="text-xl font-bold text-gray-900 tracking-tight">Gemini RAG</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 ${
-                    isActive
-                      ? "bg-primary-50 text-primary-700 border-r-2 border-primary-600"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`
-                }
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+      <nav className="flex-1 p-4 space-y-1 mt-4">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                isActive
+                  ? 'bg-primary-50 text-primary-700 shadow-sm'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              }`
+            }
+          >
+            <item.icon className={`w-5 h-5 transition-colors duration-200`} />
+            <span className="font-medium">{item.label}</span>
+          </NavLink>
+        ))}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="text-xs text-gray-500 text-center">
-          Powered by Rehsley
+      <div className="p-4 border-t border-gray-100">
+        <div className="bg-gray-50 rounded-xl p-4 flex items-center space-x-3">
+          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+            <Settings className="w-4 h-4 text-primary-600" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-900">Settings</p>
+            <p className="text-[10px] text-gray-500">v1.0.0 Stable</p>
+          </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
