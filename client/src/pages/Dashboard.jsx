@@ -7,7 +7,7 @@ import {
   Calendar,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import { chatAPI } from "../services/api";
 
 function Dashboard() {
@@ -74,7 +74,9 @@ function Dashboard() {
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Successful Responses</p>
+              <p className="text-sm font-medium text-gray-600">
+                Successful Responses
+              </p>
               <p className="text-2xl font-bold text-green-600">
                 {stats.answered}
               </p>
@@ -114,15 +116,26 @@ function Dashboard() {
             <table className="w-full text-left">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Session</th>
-                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Query</th>
-                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Gemini Response</th>
-                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Date</th>
+                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
+                    Session
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
+                    Query
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
+                    Response
+                  </th>
+                  <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
+                    Date
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {chatHistory.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-600">
                         {item.session_id.substring(0, 8)}...
