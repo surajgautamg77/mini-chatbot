@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query, Form
 from app.services.document_processor import document_processor
 from app.services.vector_service import vector_service
 from app.db.mongodb import get_database
@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.post("/upload", status_code=201)
 async def upload_document(
+    chatbot_id: str = Form(...),
     file: UploadFile = File(...),
     db: AsyncIOMotorDatabase = Depends(get_database)
 ):
@@ -22,6 +23,7 @@ async def upload_document(
         
         # 2. Save document metadata
         document = DocumentModel(
+            chatbot_id=chatbot_id,
             filename=file.filename,
             content_type=file.content_type,
             scraped_text=scraped_text
@@ -30,19 +32,17 @@ async def upload_document(
         doc_result = await db.documents.insert_one(doc_dict)
         doc_id = str(doc_result.inserted_id)
 
-        # 3. Create chunks and embeddings (separate table/collection)
-        chunks_data = await vector_service.create_chunks_and_embeddings(scraped_text, doc_id)
+        # 3. Create chunks and embeddings (associated with bot)
+        chunks_data = await vector_service.create_chunks_and_embeddings(scraped_text, doc_id, chatbot_id)
         
         if chunks_data:
-            # Insert all chunks into the 'chunks' collection
             await db.chunks.insert_many(chunks_data)
         
         return {
             "id": doc_id,
             "filename": file.filename,
-            "scraped_text": scraped_text,
             "chunk_count": len(chunks_data),
-            "message": "Document processed, chunked, and embedded successfully."
+            "message": "Document processed and associated with chatbot."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -51,31 +51,17 @@ async def upload_document(
 
 @router.get("/", response_model=List[DocumentSummary])
 async def list_documents(
+    chatbot_id: str = Query(...),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncIOMotorDatabase = Depends(get_database)
 ):
-    cursor = db.documents.find({}, {"scraped_text": 0}).skip(skip).limit(limit)
+    cursor = db.documents.find({"chatbot_id": chatbot_id}, {"scraped_text": 0}).skip(skip).limit(limit)
     documents = []
     async for doc in cursor:
         doc["id"] = str(doc["_id"])
         documents.append(doc)
     return documents
-
-@router.get("/{doc_id}", response_model=DocumentResponse)
-async def get_document(
-    doc_id: str,
-    db: AsyncIOMotorDatabase = Depends(get_database)
-):
-    if not ObjectId.is_valid(doc_id):
-        raise HTTPException(status_code=400, detail="Invalid document ID format.")
-    
-    doc = await db.documents.find_one({"_id": ObjectId(doc_id)})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Document not found.")
-    
-    doc["id"] = str(doc["_id"])
-    return doc
 
 @router.delete("/{doc_id}", status_code=200)
 async def delete_document(
@@ -85,7 +71,7 @@ async def delete_document(
     if not ObjectId.is_valid(doc_id):
         raise HTTPException(status_code=400, detail="Invalid document ID format.")
     
-    # Delete the document and its associated chunks
+    # Delete chunks first
     await db.chunks.delete_many({"document_id": doc_id})
     result = await db.documents.delete_one({"_id": ObjectId(doc_id)})
     

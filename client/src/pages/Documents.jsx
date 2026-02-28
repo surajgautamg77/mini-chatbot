@@ -7,22 +7,29 @@ import {
   File,
   Calendar,
   Image as ImageIcon,
+  AlertCircle
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { documentAPI } from "../services/api";
+import { useChatbot } from "../context/ChatbotContext";
 
 function Documents() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const { selectedChatbot } = useChatbot();
 
   const onDrop = useCallback(async (acceptedFiles) => {
+    if (!selectedChatbot) {
+      toast.error("Please select a chatbot first");
+      return;
+    }
     if (acceptedFiles.length === 0) return;
 
     setUploading(true);
     try {
       for (const file of acceptedFiles) {
-        await documentAPI.upload(file);
+        await documentAPI.upload(file, selectedChatbot.id);
         toast.success(`${file.name} uploaded successfully!`);
       }
       fetchDocuments();
@@ -32,7 +39,7 @@ function Documents() {
     } finally {
       setUploading(false);
     }
-  }, []);
+  }, [selectedChatbot]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -43,13 +50,15 @@ function Documents() {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
       "text/plain": [".txt"],
     },
-    multiple: true
+    multiple: true,
+    disabled: !selectedChatbot
   });
 
   async function fetchDocuments() {
+    if (!selectedChatbot) return;
     setLoading(true);
     try {
-      const response = await documentAPI.getAll();
+      const response = await documentAPI.getAll(selectedChatbot.id);
       setDocuments(response || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -74,7 +83,7 @@ function Documents() {
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [selectedChatbot]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString();
@@ -88,16 +97,25 @@ function Documents() {
     return <File className="w-8 h-8 text-green-500" />;
   };
 
+  if (!selectedChatbot) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-6">
+        <AlertCircle size={48} className="text-yellow-500 mb-4" />
+        <h2 className="text-xl font-bold text-gray-900">No Chatbot Selected</h2>
+        <p className="text-gray-500 mt-2 max-w-sm">Please select a chatbot from the sidebar or management page to manage its knowledge base.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Knowledge Base</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Knowledge Base: {selectedChatbot.name}</h1>
         <p className="text-gray-600">
-          Upload documents to train your chatbot. Supported: PDF, Images, Word, Excel, TXT.
+          Upload documents to train this specific chatbot.
         </p>
       </div>
 
-      {/* Explicitly spreading props to a simple div to avoid potential card class issues */}
       <div 
         {...getRootProps()} 
         className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ease-in-out bg-white shadow-sm ${
@@ -114,7 +132,7 @@ function Documents() {
           
           {uploading ? (
             <div className="space-y-2">
-              <p className="text-lg font-semibold text-gray-900">Uploading documents...</p>
+              <p className="text-lg font-semibold text-gray-900">Uploading to {selectedChatbot.name}...</p>
               <div className="w-48 h-1.5 bg-gray-100 rounded-full overflow-hidden mx-auto">
                 <div className="h-full bg-primary-600 animate-progress origin-left"></div>
               </div>
@@ -125,7 +143,7 @@ function Documents() {
                 {isDragActive ? "Drop them now!" : "Click or drag files here to upload"}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Your files will be processed and indexed automatically
+                Supported: PDF, Images, Word, Excel, TXT
               </p>
             </>
           )}
@@ -152,8 +170,8 @@ function Documents() {
             <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                <FileText className="w-8 h-8 text-gray-300" />
             </div>
-            <p className="text-gray-500 font-medium">Your knowledge base is empty</p>
-            <p className="text-sm text-gray-400 mt-1">Upload files above to get started</p>
+            <p className="text-gray-500 font-medium">This chatbot's knowledge base is empty</p>
+            <p className="text-sm text-gray-400 mt-1">Upload files above to start training {selectedChatbot.name}.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -172,7 +190,7 @@ function Documents() {
                     </h3>
                     <div className="flex items-center space-x-3 text-[11px] text-gray-400 mt-0.5">
                       <span className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
+                        <Calendar className="w-3.5 h-3.5 mr-1" />
                         {formatDate(doc.created_at)}
                       </span>
                       <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-500 font-medium uppercase text-[9px]">

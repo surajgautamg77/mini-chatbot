@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class DocumentModel(BaseModel):
+    chatbot_id: str
     filename: str
     content_type: str
     scraped_text: str

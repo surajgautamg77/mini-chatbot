@@ -17,7 +17,7 @@ class VectorService:
             length_function=len,
         )
 
-    async def create_chunks_and_embeddings(self, text: str, doc_id: str) -> List[Dict[str, Any]]:
+    async def create_chunks_and_embeddings(self, text: str, doc_id: str, chatbot_id: str) -> List[Dict[str, Any]]:
         if not text.strip():
             return []
             
@@ -38,12 +38,14 @@ class VectorService:
                 embedding_values = response['embedding']
                 
                 chunk_data.append({
+                    "chatbot_id": chatbot_id,
                     "document_id": doc_id,
                     "chunk_index": i,
                     "content": chunk_text,
                     "embedding": embedding_values,
                     "metadata": {
                         "source_doc_id": doc_id,
+                        "chatbot_id": chatbot_id,
                         "chunk_count": len(chunks),
                         "model": self.embedding_model,
                         "dimension": self.output_dimensionality

@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { chatAPI } from '../services/api';
 
-export const useChat = (initialSessionId = null) => {
+export const useChat = (initialChatbotId = null, initialSessionId = null) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(initialSessionId);
+  const [chatbotId, setChatbotId] = useState(initialChatbotId);
 
-  const fetchHistory = useCallback(async (sid) => {
-    if (!sid) {
+  const fetchHistory = useCallback(async (sid, bid) => {
+    if (!sid || !bid) {
       setMessages([]);
       return;
     }
     
     setLoading(true);
     try {
-      const response = await chatAPI.getHistory(sid);
-      // History is returned from newest to oldest; we reverse to show chronologically
+      const response = await chatAPI.getHistory(sid, bid);
       const history = (response || []).reverse().map((chat) => [
         {
           id: chat.id + '-q',
@@ -32,37 +32,39 @@ export const useChat = (initialSessionId = null) => {
       ]).flat();
       setMessages(history);
     } catch (error) {
-      // 404 means a new session with no history yet
       setMessages([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Sync Session ID from URL or Storage
+  // Sync IDs
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlSid = urlParams.get('sessionId');
+    const urlBid = urlParams.get('chatbotId');
     
-    let sid = urlSid || initialSessionId || localStorage.getItem('chat_session_id');
+    let bid = urlBid || initialChatbotId;
+    let sid = urlSid || initialSessionId || localStorage.getItem(`chat_session_${bid}`);
     
-    if (!sid) {
+    if (!sid && bid) {
       sid = crypto.randomUUID();
-      localStorage.setItem('chat_session_id', sid);
+      localStorage.setItem(`chat_session_${bid}`, sid);
     }
     
+    setChatbotId(bid);
     setSessionId(sid);
-  }, [initialSessionId]);
+  }, [initialChatbotId, initialSessionId]);
 
-  // REFRESH history whenever sessionId changes
+  // Refresh history when IDs change
   useEffect(() => {
-    if (sessionId) {
-      fetchHistory(sessionId);
+    if (sessionId && chatbotId) {
+      fetchHistory(sessionId, chatbotId);
     }
-  }, [sessionId, fetchHistory]);
+  }, [sessionId, chatbotId, fetchHistory]);
 
   const sendMessage = async (content) => {
-    if (!content.trim() || loading) return;
+    if (!content.trim() || loading || !chatbotId) return;
 
     const userMessage = {
       id: Date.now(),
@@ -75,7 +77,7 @@ export const useChat = (initialSessionId = null) => {
     setLoading(true);
 
     try {
-      const response = await chatAPI.query(content, sessionId);
+      const response = await chatAPI.query(content, sessionId, chatbotId);
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
@@ -101,10 +103,13 @@ export const useChat = (initialSessionId = null) => {
 
   const clearHistory = () => {
     const newSid = crypto.randomUUID();
-    localStorage.setItem('chat_session_id', newSid);
-    setSessionId(newSid); // This will trigger the useEffect to refresh/clear messages
+    if (chatbotId) {
+      localStorage.setItem(`chat_session_${chatbotId}`, newSid);
+    }
+    setSessionId(newSid);
+    setMessages([]);
     return newSid;
   };
 
-  return { messages, loading, sendMessage, clearHistory, sessionId };
+  return { messages, loading, sendMessage, clearHistory, sessionId, chatbotId };
 };

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 class ChatMessage(BaseModel):
+    chatbot_id: str
     session_id: str
     query: str
     answer: str

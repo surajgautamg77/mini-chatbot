@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Using local FastAPI backend
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
 const api = axios.create({
@@ -10,12 +9,32 @@ const api = axios.create({
   },
 });
 
+// Chatbot Management
+export const chatbotAPI = {
+  create: async (name, description) => {
+    const response = await api.post("/chatbots/", { name, description });
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get("/chatbots/");
+    return response.data;
+  },
+  getOne: async (id) => {
+    const response = await api.get(`/chatbots/${id}`);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/chatbots/${id}`);
+    return response.data;
+  }
+};
+
 // Document management
 export const documentAPI = {
-  // Upload a document (image, pdf, docx, xlsx, txt)
-  upload: async (file) => {
+  upload: async (file, chatbotId) => {
     const formData = new FormData();
-    formData.append("file", file); // Backend expects 'file'
+    formData.append("file", file);
+    formData.append("chatbot_id", chatbotId);
 
     const response = await api.post("/documents/upload", formData, {
       headers: {
@@ -25,44 +44,37 @@ export const documentAPI = {
     return response.data;
   },
 
-  // Get all documents (summary list)
-  getAll: async () => {
-    const response = await api.get("/documents/");
+  getAll: async (chatbotId) => {
+    const response = await api.get(`/documents/?chatbot_id=${chatbotId}`);
     return response.data;
   },
 
-  // Delete a document
   delete: async (documentId) => {
     const response = await api.delete(`/documents/${documentId}`);
     return response.data;
   },
 };
 
-// Chat functionality (RAG)
+// Chat functionality
 export const chatAPI = {
-  // Send a query to the chat API
-  query: async (query, sessionId) => {
+  query: async (query, sessionId, chatbotId) => {
     const response = await api.post("/chat/", { 
       query, 
-      session_id: sessionId 
+      session_id: sessionId,
+      chatbot_id: chatbotId
     });
     return response.data;
   },
 
-  // Get chat history for a session
-  getHistory: async (sessionId) => {
-    const response = await api.get(`/chat/history/${sessionId}`);
+  getHistory: async (sessionId, chatbotId) => {
+    const response = await api.get(`/chat/history/${sessionId}?chatbot_id=${chatbotId}`);
     return response.data;
   },
 
-  // Get all chat history (for dashboard)
-  getAllHistory: async (limit = 100, skip = 0) => {
-    const response = await api.get(`/chat/all-history?limit=${limit}&skip=${skip}`);
+  getAllHistory: async (chatbotId, limit = 100, skip = 0) => {
+    const response = await api.get(`/chat/all-history?chatbot_id=${chatbotId}&limit=${limit}&skip=${skip}`);
     return response.data;
   },
-  
-  // Note: Clear history and Delete single entry are not yet implemented on the backend 
-  // but could be added to match existing UI needs.
 };
 
 export default api;

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import documents, chat
+from app.api.v1.endpoints import documents, chat, chatbots
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.core.config import settings
 
@@ -9,7 +9,7 @@ app = FastAPI(title=settings.PROJECT_NAME)
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins, adjust as needed for security
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +25,7 @@ async def shutdown_db_client():
     await close_mongo_connection()
 
 # Include Routers
+app.include_router(chatbots.router, prefix="/api/v1/chatbots", tags=["chatbots"])
 app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 
