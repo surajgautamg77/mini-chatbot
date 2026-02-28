@@ -5,6 +5,7 @@ from app.services.llm_service import llm_service
 from app.db.mongodb import get_database
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from sklearn.metrics.pairwise import cosine_similarity
+from typing import List
 import numpy as np
 
 router = APIRouter()
@@ -23,12 +24,10 @@ async def chat_with_documents(
     db: AsyncIOMotorDatabase = Depends(get_database)
 ):
     try:
-        # 1. Embed user query
+        # 1. Embed user query using OpenAI
         query_embedding = await vector_service.get_query_embedding(request.query)
         
-        # 2. Perform vector search in MongoDB 
-        # (Manual retrieval for small-to-medium datasets; 
-        # for Atlas, use $vectorSearch aggregation)
+        # 2. Vector search (Manual)
         cursor = db.chunks.find({})
         all_chunks = []
         all_embeddings = []
@@ -38,37 +37,23 @@ async def chat_with_documents(
             all_embeddings.append(chunk["embedding"])
         
         if not all_chunks:
-            raise HTTPException(status_code=404, detail="No document chunks found to search against.")
+            raise HTTPException(status_code=404, detail="No document chunks found.")
 
-        # Compute cosine similarity
+        # Compute similarity
         similarities = cosine_similarity([query_embedding], all_embeddings)[0]
-        
-        # Sort by similarity and get top K
         top_indices = np.argsort(similarities)[-request.top_k:][::-1]
         
         retrieved_chunks = [all_chunks[i] for i in top_indices]
-        context_text = "
-
-".join([f"Source (Doc: {c['document_id']}): {c['content']}" for c in retrieved_chunks])
+        context_text = "\n\n".join([f"Context: {c['content']}" for c in retrieved_chunks])
         
-        # 3. Construct prompt for Llama 3.1
-        system_prompt = "You are a helpful AI assistant. Use only the following context to answer the user's question. If you don't know the answer, say you don't know based on the provided documents. Keep it concise."
+        # 3. Generate response using OpenAI
+        system_prompt = "You are a helpful AI assistant. Use the provided context to answer the user's question accurately. If the context doesn't contain the answer, say you don't know based on the provided documents."
+        user_prompt = f"Context:\n{context_text}\n\nQuestion: {request.query}"
         
-        llama_prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-Context:
-{context_text}
-
-Question:
-{request.query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
-
-        # 4. Generate response using vLLM
-        answer = await llm_service.generate_response(llama_prompt)
+        answer = await llm_service.generate_response(system_prompt, user_prompt)
         
         return ChatResponse(
-            answer=answer.strip(),
+            answer=answer,
             sources=[{"doc_id": c["document_id"], "content": c["content"][:200]} for c in retrieved_chunks]
         )
         

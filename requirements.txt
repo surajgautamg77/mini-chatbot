@@ -11,7 +11,6 @@ python-docx
 pandas
 openpyxl
 langchain-text-splitters
-sentence-transformers
-numpy
-vllm
+google-generativeai
 scikit-learn
+numpy
