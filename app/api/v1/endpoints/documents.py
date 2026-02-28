@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
 from app.services.document_processor import document_processor
+from app.services.vector_service import vector_service
 from app.db.mongodb import get_database
 from app.models.document import DocumentModel
 from app.schemas.document import DocumentSummary, DocumentResponse
@@ -16,22 +17,32 @@ async def upload_document(
 ):
     try:
         content = await file.read()
+        # 1. Process and scrape text
         scraped_text = await document_processor.process_file(content, file.filename, file.content_type)
         
+        # 2. Save document metadata
         document = DocumentModel(
             filename=file.filename,
             content_type=file.content_type,
             scraped_text=scraped_text
         )
-        
         doc_dict = document.model_dump()
-        result = await db.documents.insert_one(doc_dict)
+        doc_result = await db.documents.insert_one(doc_dict)
+        doc_id = str(doc_result.inserted_id)
+
+        # 3. Create chunks and embeddings (separate table/collection)
+        chunks_data = await vector_service.create_chunks_and_embeddings(scraped_text, doc_id)
+        
+        if chunks_data:
+            # Insert all chunks into the 'chunks' collection
+            await db.chunks.insert_many(chunks_data)
         
         return {
-            "id": str(result.inserted_id),
+            "id": doc_id,
             "filename": file.filename,
             "scraped_text": scraped_text,
-            "message": "Document processed and saved successfully."
+            "chunk_count": len(chunks_data),
+            "message": "Document processed, chunked, and embedded successfully."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -44,7 +55,6 @@ async def list_documents(
     limit: int = Query(20, ge=1, le=100),
     db: AsyncIOMotorDatabase = Depends(get_database)
 ):
-    # Fetching only the fields needed for the summary (excluding scraped_text)
     cursor = db.documents.find({}, {"scraped_text": 0}).skip(skip).limit(limit)
     documents = []
     async for doc in cursor:
@@ -75,8 +85,11 @@ async def delete_document(
     if not ObjectId.is_valid(doc_id):
         raise HTTPException(status_code=400, detail="Invalid document ID format.")
     
+    # Delete the document and its associated chunks
+    await db.chunks.delete_many({"document_id": doc_id})
     result = await db.documents.delete_one({"_id": ObjectId(doc_id)})
+    
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document not found.")
     
-    return {"message": "Document deleted successfully."}
+    return {"message": "Document and its vector chunks deleted successfully."}
