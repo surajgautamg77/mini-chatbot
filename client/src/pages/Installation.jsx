@@ -20,8 +20,8 @@ function Installation() {
     var btn = document.createElement("div");
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>';
     btn.style.position = "fixed";
-    btn.style.bottom = "20px";
-    btn.style.right = "20px";
+    btn.style.bottom = "15px";
+    btn.style.right = "15px";
     btn.style.width = "60px";
     btn.style.height = "60px";
     btn.style.backgroundColor = "#4f46e5";
@@ -36,8 +36,8 @@ function Installation() {
     
     var container = document.createElement("div");
     container.style.position = "fixed";
-    container.style.bottom = "90px";
-    container.style.right = "20px";
+    container.style.bottom = "15px";
+    container.style.right = "15px";
     container.style.width = "400px";
     container.style.height = "600px";
     container.style.maxWidth = "calc(100vw - 40px)";
@@ -56,21 +56,21 @@ function Installation() {
     container.appendChild(iframe);
     document.body.appendChild(btn);
     document.body.appendChild(container);
+// Toggle function
+function toggleChat() {
+  if (container.style.display === "none") {
+    // Generate a new session ID every time it opens
+    var newSessionId = generateUUID();
+    iframe.src = "${siteUrl}/embed/chat?sessionId=" + newSessionId;
+    container.style.display = "block";
+    btn.style.display = "none"; // Hide button when open
+  } else {
+    container.style.display = "none";
+    btn.style.display = "flex"; // Show button when closed
+    iframe.src = "about:blank";
+  }
+}
 
-    function toggleChat() {
-      if (container.style.display === "none") {
-        // Generate a new session ID every time it opens
-        var newSessionId = generateUUID();
-        iframe.src = "${siteUrl}/embed/chat?sessionId=" + newSessionId;
-        container.style.display = "block";
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
-      } else {
-        container.style.display = "none";
-        // Optional: clear iframe src to stop background activity
-        iframe.src = "about:blank";
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>';
-      }
-    }
 
     btn.onclick = toggleChat;
 

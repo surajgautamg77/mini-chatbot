@@ -143,7 +143,7 @@ function EmbedChat() {
           </button>
         </div>
         <p className="text-[9px] text-center text-gray-400 mt-2 font-bold uppercase tracking-tight">
-          Gemini AI
+          AI
         </p>
       </div>
     </div>
