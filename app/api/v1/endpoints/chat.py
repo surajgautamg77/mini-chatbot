@@ -50,7 +50,13 @@ async def chat_with_documents(
             context_text = "\n\n".join([f"Context: {c['content']}" for c in retrieved_chunks])
         
         # 3. Generate response using Gemini 2.5 Flash
-        system_prompt = "You are a helpful AI assistant. Use the provided context to answer the user's question accurately. If the context doesn't contain the answer, use your knowledge but mention you didn't find it in the documents."
+        system_prompt = (
+            "You are a helpful and natural-sounding AI assistant. "
+            "Respond directly to the user's question. Do NOT mention 'based on the provided context', 'in the documents you shared', or 'the context says'. "
+            "Simply state the answer as if you already know the information. "
+            "Speak in a genuine, conversational tone. Avoid unnecessary lists; use paragraphs for a more natural feel. "
+            "If you cannot find the answer, answer from your general knowledge but don't state that you couldn't find it in the context."
+        )
         user_prompt = f"Context:\n{context_text}\n\nQuestion: {request.query}"
         
         answer = await llm_service.generate_response(system_prompt, user_prompt)
