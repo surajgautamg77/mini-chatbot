@@ -142,9 +142,6 @@ function EmbedChat() {
             <Send className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-[9px] text-center text-gray-400 mt-2 font-bold uppercase tracking-tight">
-          AI
-        </p>
       </div>
     </div>
   );
