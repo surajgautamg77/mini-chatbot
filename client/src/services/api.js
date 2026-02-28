@@ -54,6 +54,12 @@ export const chatAPI = {
     const response = await api.get(`/chat/history/${sessionId}`);
     return response.data;
   },
+
+  // Get all chat history (for dashboard)
+  getAllHistory: async (limit = 100, skip = 0) => {
+    const response = await api.get(`/chat/all-history?limit=${limit}&skip=${skip}`);
+    return response.data;
+  },
   
   // Note: Clear history and Delete single entry are not yet implemented on the backend 
   // but could be added to match existing UI needs.

@@ -78,6 +78,21 @@ async def chat_with_documents(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/all-history", response_model=List[ChatHistoryResponse])
+async def get_all_chat_history(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    cursor = db.chat_history.find({}).sort("timestamp", -1).skip(skip).limit(limit)
+    history = []
+    async for entry in cursor:
+        entry["id"] = str(entry["_id"])
+        # Handle cases where session_id might be missing in old records
+        entry["session_id"] = entry.get("session_id", "default")
+        history.append(entry)
+    return history
+
 @router.get("/history/{session_id}", response_model=List[ChatHistoryResponse])
 async def get_chat_history(
     session_id: str,
