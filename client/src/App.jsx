@@ -7,9 +7,9 @@ import Installation from './pages/Installation';
 import EmbedChat from './pages/EmbedChat';
 import Chatbots from './pages/Chatbots';
 import ChatbotDetail from './pages/ChatbotDetail';
+import BotHistory from './pages/BotHistory';
 import { ChatbotProvider } from './context/ChatbotContext';
 
-// Standard Layout component using Outlet
 const AppLayout = () => (
   <div className="flex h-screen bg-gray-50 overflow-hidden">
     <Sidebar />
@@ -32,6 +32,7 @@ function App() {
             <Route index element={<Navigate to="knowledge" replace />} />
             <Route path="knowledge" element={<Documents />} />
             <Route path="test" element={<Chatbot />} />
+            <Route path="history" element={<BotHistory />} />
             <Route path="installation" element={<Installation />} />
           </Route>
         </Route>

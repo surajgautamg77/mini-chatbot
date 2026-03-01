@@ -75,6 +75,12 @@ export const chatAPI = {
     const response = await api.get(`/chat/all-history?chatbot_id=${chatbotId}&limit=${limit}&skip=${skip}`);
     return response.data;
   },
+
+  // Get unique sessions for a chatbot
+  getSessions: async (chatbotId) => {
+    const response = await api.get(`/chat/sessions?chatbot_id=${chatbotId}`);
+    return response.data;
+  },
 };
 
 export default api;

@@ -71,6 +71,37 @@ async def chat_with_documents(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/sessions", response_model=List[dict])
+async def get_chatbot_sessions(
+    chatbot_id: str = Query(...),
+    db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    # Use aggregation to find unique sessions and their last message time
+    pipeline = [
+        {"$match": {"chatbot_id": chatbot_id}},
+        {"$sort": {"timestamp": -1}},
+        {
+            "$group": {
+                "_id": "$session_id",
+                "last_message": {"$first": "$query"},
+                "timestamp": {"$first": "$timestamp"},
+                "count": {"$sum": 1}
+            }
+        },
+        {"$sort": {"timestamp": -1}}
+    ]
+    
+    cursor = db.chat_history.aggregate(pipeline)
+    sessions = []
+    async for sess in cursor:
+        sessions.append({
+            "session_id": sess["_id"],
+            "last_message": sess["last_message"],
+            "timestamp": sess["timestamp"],
+            "message_count": sess["count"]
+        })
+    return sessions
+
 @router.get("/all-history", response_model=List[ChatHistoryResponse])
 async def get_all_chat_history(
     chatbot_id: str = Query(...),

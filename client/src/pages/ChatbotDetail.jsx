@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FileText, MessageSquare, Code, ChevronLeft, Bot } from 'lucide-react';
+import { FileText, MessageSquare, Code, ChevronLeft, Bot, Clock } from 'lucide-react';
 import { useChatbot } from '../context/ChatbotContext';
 import { chatbotAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -38,6 +38,7 @@ function ChatbotDetail() {
   const tabs = [
     { to: 'knowledge', icon: FileText, label: 'Knowledge Base' },
     { to: 'test', icon: MessageSquare, label: 'Test Chatbot' },
+    { to: 'history', icon: Clock, label: 'Chat History' },
     { to: 'installation', icon: Code, label: 'Installation' },
   ];
 
