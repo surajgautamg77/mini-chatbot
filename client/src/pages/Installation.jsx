@@ -17,7 +17,7 @@ function Installation() {
   const { selectedChatbot } = useChatbot();
 
   // URL where the widget JS is hosted (FastAPI Backend)
-  const backendUrl = "http://localhost:8000";
+  const backendUrl = "https://mini-chatbot-jf52.onrender.com";
   // URL where the React application is hosted
   const appUrl = window.location.origin;
 

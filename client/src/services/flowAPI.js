@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = import.meta.env.VITE_FLOW_API_URL || "https://mini-chatbot-jf52.onrender.com/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
