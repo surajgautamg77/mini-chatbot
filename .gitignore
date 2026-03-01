@@ -1,0 +1,27 @@
+# Node.js
+client/node_modules/
+client/dist/
+client/.env*
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+
+# Python
+server/venv/
+server/env/
+server/.env
+server/__pycache__/
+server/*.py[cod]
+server/*$py.class
+server/.pytest_cache/
+server/.mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
